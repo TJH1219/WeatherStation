@@ -1,0 +1,48 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Weather Page</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <style>
+        .page-title{text-align:center;padding:20px}
+        body{margin:0;font-family:sans-serif}
+        .grid{display:grid;gap:8px;padding:8px;grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+        .card{border:1px solid #ccc;border-radius:6px;padding:12px}
+        .label{font-size:12px;color:#555;margin:0 0 6px}
+        .value{font-size:24px;margin:0}
+    </style>
+
+</head>
+<body class="page-title">
+<div><h1>Local Weather</h1></div>
+<div class="grid">
+    <div class="card"><p class="label">Temperature</p><p id="temp" class="value">--</p></div>
+    <div class="card"><p class="label">Humidity</p><p id="hum" class="value">--</p></div>
+    <div class="card"><p class="label">Pressure</p><p id="press" class="value">--</p></div>
+</div>
+<script>
+    // Cache element refs to minimize DOM lookups
+    const el={t:document.getElementById('temp'),
+        h:document.getElementById('hum'),
+        p:document.getElementById('press')};
+
+    async function refresh(){
+        try{
+            // Example: single endpoint returning JSON: { temp:.., hum:.., press:.. }
+            const r=await fetch('/api/env',{cache:'no-store'});
+            if(!r.ok) throw new Error('net');
+            const d=await r.json();
+            if(d.temp!=null) el.t.textContent=d.temp+'°C';
+            if(d.hum!=null)  el.h.textContent=d.hum+'%';
+            if(d.press!=null)el.p.textContent=d.press+' hPa';
+        }catch(e){
+            // Keep UI responsive; avoid console spam on MCU
+        }
+    }
+    refresh();
+    setInterval(refresh,5000); // adjust interval to your needs
+</script>
+
+</body>
+</html>
