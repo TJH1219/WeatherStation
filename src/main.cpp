@@ -2,6 +2,7 @@
 #include <WiFiNINA.h>
 #include <FlashStorage_SAMD.h>
 #include <index_html_gz.h>
+#include <MKRENV.h>
 
 #ifndef WIFI_SSID_MAXLEN
 #define WIFI_SSID_MAXLEN 32
@@ -37,6 +38,15 @@ struct EnvData {
 const uint32_t WIFI_CREDS_MAGIC = 0xC0DEC0DE;
 
 FlashStorage(wifiStore, WifiCreds);
+
+static EnvData getEnvData() {
+    ENV.begin();
+    EnvData d = {};
+    d.Temp = ENV.readTemperature();
+    d.Humidity = ENV.readHumidity();
+    d.Pressure = ENV.readPressure();
+    return d;
+}
 
 //url helpers
 static inline String urlDecode(const String& src) {
@@ -256,10 +266,7 @@ struct STAMode : public IServerMode {
             return;
         }
         else if (isGet && (path == "/api/env")) {
-            EnvData d = {};
-            d.Temp = 25.0;
-            d.Humidity = 50.0;
-            d.Pressure = 1013.25;
+            EnvData d = getEnvData();
             String json = "{";
             json += "\"temp\": " + String(d.Temp) + ",";
             json += "\"hum\": " + String(d.Humidity) + ",";
